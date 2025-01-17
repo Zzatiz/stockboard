@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AIO Trading Dashboard</title>
+  <!-- Lightweight Charts library from CDN -->
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<style>
+  /* Style the new calc-logs section */
+  .log-panel {
+    background-color: #101010;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    border-radius: 4px;
+    height: 100px; /* Fixed height */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+  }
+
+  html, body {
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: sans-serif;
+  }
+
+  #container {
+    background-color: #000;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full browser window height */
+  }
+
+  /* Top section: chart + controls side by side */
+  #top-section {
+    background-color: #000;
+    display: flex;
+    flex: 3;
+    color: #fff;
+  }
+
+  /* Bottom 1/4 area for terminal */
+  #terminal {
+    margin-bottom: 1%;
+    flex: 1;
+    border-top: 2px solid #ccc;
+    padding: 10px;
+    overflow-y: auto; /* Scroll if logs get large */
+  }
+
+  /* Chart area ~2/3 wide */
+  #chart-area {
+    background-color: #000;
+    flex: 2;
+    border-right: 2px solid #000;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Actual chart container */
+  #chart {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Right panel ~1/3 wide */
+  #controls {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+  }
+  h3 {
+    color: #0f0;
+  }
+  /* Minor styling for checkboxes and form elements */
+  #controls h3 {
+    margin-top: 0;
+  }
+
+  .row {
+    margin-bottom: 5px;
+  }
+
+  #controls label {
+    display: inline-block;
+    margin: 4px 0;
+  }
+  #controls button {
+    margin-top: 5px;
+    display: block;
+  }
+  /* Terminal/logs area */
+  #logs {
+    background-color: #101010;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 14px;
+    height: 100%;
+    padding: 10px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    border-radius: 4px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+  }
+</style>
+<body>
+  <div id="container">
+    <div id="top-section">
+      <div id="chart-area">
+        <div id="chart" style="width: 100%; height: 300px;"></div>
+      </div>
+
+      <div id="controls">
+        <h3>Chart (1 Min Interval, 1 Day Range)</h3>
+        <div class="row">
+          <!-- We will keep only the "Set Chart" button to explicitly reload 1-minute data for 1-day. -->
+          <button id="set-chart-timeframe" type="button">Load 1D/1m Chart</button>
+          <button id="btn-check-price" type="button">Refresh Chart Now</button>
+        </div>
+
+        <h3>Quant Theories</h3>
+        <label><input type="checkbox" id="ckb-bollinger" checked /> Bollinger Bands</label><br/>
+        <label><input type="checkbox" id="ckb-ema" /> EMA Cross</label><br/>
+        <label><input type="checkbox" id="ckb-fib" /> Fibonacci</label><br/>
+        <label><input type="checkbox" id="ckb-ewt" /> Elliott Wave</label><br/>
+        <label><input type="checkbox" id="ckb-support-flow" /> Support Flow</label>
+
+        <div class="row">
+          <label for="input-support-price">Support Price (optional):</label>
+          <input type="number" id="input-support-price" placeholder="Enter initial support price" step="0.01" disabled />
+        </div>
+        <div>
+          <label for="daily-start-time">Daily Start Time (UTC):</label>
+          <input type="time" id="daily-start-time" name="daily-start-time" value="00:00">
+      </div>
+        <div class="row">
+          <label for="input-in-position">IN Position Price (optional):</label>
+          <input type="number" id="input-in-position" placeholder="Enter your entry price" step="0.01" />
+        </div>
+
+        <button id="calcChart" type="button">Calculate</button>
+        <button id="btnClearMarkers" type="button">Clear Calculations</button>
+
+        <hr />
+        <h3>Calculation Logs</h3>
+        <div id="calc-logs" class="log-panel"></div>
+
+        <h3>Ticker & Options Trade</h3>
+        <div class="row">
+          <label for="ticker-input">Ticker:</label>
+          <input type="text" id="ticker-input" placeholder="AAPL" />
+          <button id="btn-set-ticker" type="button">Set</button>
+        </div>
+
+        <div class="row">
+          <label for="option-type">Type:</label>
+          <select id="option-type">
+            <option value="call">Call</option>
+            <option value="put">Put</option>
+          </select>
+        </div>
+        <!-- example trade inputs -->
+        <button id="btn-place-trade" type="button">Place Trade</button>
+      </div>
+    </div>
+
+    <div id="terminal">
+      <h3>Trade & Quant Logs</h3>
+      <div id="logs"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
