@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.svg" alt="stockboard banner" width="100%"/>
+</p>
+
 a stock market predicting local webapp. 
 After you install all dependencies and access the app it lets you input any stock ticker which it then grabs the latest 5 day stock data in minutes.
 
